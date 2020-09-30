@@ -5,6 +5,9 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.springframework.stereotype.Repository;
 
@@ -26,10 +29,16 @@ public class MyDataDaoImpl implements MyDataDao<MyData> {
 	
 	@Override
 	public List<MyData> getAll() {
-		Query query = entityManager.createQuery("from MyData");
-		@SuppressWarnings("unchecked")
-		List<MyData> list = query.getResultList();
-		entityManager.close();
+		List<MyData> list = null;
+		CriteriaBuilder builder =
+			entityManager.getCriteriaBuilder();
+		CriteriaQuery<MyData> query =
+			builder.createQuery(MyData.class);
+		Root<MyData> root = query.from(MyData.class);
+		query.select(root);
+		list = (List<MyData>)entityManager
+			.createQuery(query)
+			.getResultList();
 		return list;
 	}
 	
@@ -44,5 +53,32 @@ public class MyDataDaoImpl implements MyDataDao<MyData> {
 	public List<MyData> findByName(String name) {
 		return (List<MyData>)entityManager.createQuery("from MyData where name = "
 				+ name).getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<MyData> find(String fstr) {
+		List<MyData> list = null;
+		Long fid = 0L;
+		try {
+			fid = Long.parseLong(fstr);
+		} catch (NumberFormatException e) {
+//			e.printStackTrace();
+		}
+		Query query = entityManager
+			.createNamedQuery("findWithName")
+			.setParameter("fname", "%" + fstr + "%");
+		list = query.getResultList();
+		return list;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<MyData> findByAge(int min, int max) {
+		return (List<MyData>)entityManager
+			.createNamedQuery("findByAge")
+			.setParameter("min", min)
+			.setParameter("max", max)
+			.getResultList();
 	}
 }
