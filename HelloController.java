@@ -3,6 +3,8 @@ package com.tuyano.springboot;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,14 +24,43 @@ import com.tuyano.springboot.repositories.MyDataRepository;
 public class HelloController {
 	@Autowired
 	MyDataRepository repository;
+//	@PersistenceContext
+//	EntityManager entityManager;
+	@Autowired
+	MyDataDaoImpl dao;
+	
+	@PostConstruct
+	public void init() {
+//		dao = new MyDataDaoImpl(entityManager);
+		//1つ目のダミーデータ作成
+		MyData d1 = new MyData();
+		d1.setName("tuyano");
+		d1.setAge(123);
+		d1.setMail("syoda@tuyano.com");
+		d1.setMemo("090999999");
+		repository.saveAndFlush(d1);
+		//2つ目のダミーデータ作成
+		MyData d2 = new MyData();
+		d2.setName("hanako");
+		d2.setAge(15);
+		d2.setMail("hanako@flower");
+		d2.setMemo("080888888");
+		repository.saveAndFlush(d2);
+		//3つ目のダミーデータ作成
+		MyData d3 = new MyData();
+		d3.setName("sachiko");
+		d3.setAge(37);
+		d3.setMail("sachiko@happy");
+		d3.setMemo("070777777");
+		repository.saveAndFlush(d3);
+	}
+	
 	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public ModelAndView index(
-			@ModelAttribute("formModel") MyData mydata,
-		    ModelAndView mav) {
+	public ModelAndView index(ModelAndView mav) {
 		mav.setViewName("index");
-		mav.addObject("msg", "this is sample content.");
-		mav.addObject("formModel", mydata);
-		Iterable<MyData> list = repository.findAll();
+		mav.addObject("msg", "MyDataのサンプルです。");
+//		MyDataDaoImpl dao = new MyDataDaoImpl();
+		Iterable<MyData> list = dao.getAll();
 		mav.addObject("datalist", list);
 		return mav;
 	}
@@ -55,30 +86,7 @@ public class HelloController {
 		return res;
 	}
 	
-	@PostConstruct
-	public void init() {
-		//1つ目のダミーデータ作成
-		MyData d1 = new MyData();
-		d1.setName("tuyano");
-		d1.setAge(123);
-		d1.setMail("syoda@tuyano.com");
-		d1.setMemo("this is my data!");
-		repository.saveAndFlush(d1);
-		//2つ目のダミーデータ作成
-		MyData d2 = new MyData();
-		d2.setName("hanako");
-		d2.setAge(15);
-		d2.setMail("hanako@flower");
-		d2.setMemo("my girl friend.");
-		repository.saveAndFlush(d2);
-		//3つ目のダミーデータ作成
-		MyData d3 = new MyData();
-		d3.setName("sachiko");
-		d3.setAge(37);
-		d3.setMail("sachiko@happy");
-		d3.setMemo("my work friend");
-		repository.saveAndFlush(d3);
-	}
+	
 	
 	@RequestMapping(value= "/edit/{id}", method = RequestMethod.GET)
 	public ModelAndView edit(@ModelAttribute MyData mydata,
